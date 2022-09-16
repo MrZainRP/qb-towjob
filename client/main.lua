@@ -11,6 +11,15 @@ local showMarker = false
 local CurrentBlip2 = nil
 local CurrentTow = nil
 local drawDropOff = false
+local lvl8 = false
+local lvl7 = false
+local lvl6 = false
+local lvl5 = false
+local lvl4 = false
+local lvl3 = false
+local lvl2 = false
+local lvl1 = false
+local lvl0 = false
 
 -- Functions
 
@@ -182,9 +191,20 @@ local function deliverVehicle(vehicle)
     RemoveBlip(CurrentBlip2)
     JobsDone = JobsDone + 1
     VehicleSpawned = false
-    QBCore.Functions.Notify(Lang:t("mission.delivered_vehicle"), "success")
-    QBCore.Functions.Notify(Lang:t("mission.get_new_vehicle"))
-
+    if Config.NotifyType == 'qb' then
+        QBCore.Functions.Notify(Lang:t("mission.delivered_vehicle"), "success", 3500)
+    elseif Config.NotifyType == "okok" then
+        exports['okokNotify']:Alert("VEHICLE DELIVERED", Lang:t("mission.delivered_vehicle"), 3500, "success")
+    end 
+    TriggerServerEvent('qb-tow:server:nano', vehNetID)
+    if Config.mzskills then 
+        TriggerEvent('qb-towjob:client:mzSkills')
+    end 
+    if Config.NotifyType == 'qb' then
+        QBCore.Functions.Notify(Lang:t("mission.get_new_vehicle"), "primary", 3500)
+    elseif Config.NotifyType == "okok" then
+        exports['okokNotify']:Alert("NEXT JOB", Lang:t("mission.get_new_vehicle"), 3500, "info")
+    end 
     local randomLocation = getRandomVehicleLocation()
     CurrentLocation.x = Config.Locations["towspots"][randomLocation].coords.x
     CurrentLocation.y = Config.Locations["towspots"][randomLocation].coords.y
@@ -192,7 +212,6 @@ local function deliverVehicle(vehicle)
     CurrentLocation.model = Config.Locations["towspots"][randomLocation].model
     CurrentLocation.id = randomLocation
     CreateZone("towspots", randomLocation)
-
     CurrentBlip = AddBlipForCoord(CurrentLocation.x, CurrentLocation.y, CurrentLocation.z)
     SetBlipColour(CurrentBlip, 3)
     SetBlipRoute(CurrentBlip, true)
@@ -223,6 +242,7 @@ local function CreateElements()
     CreateZone("main")
     CreateZone("vehicle")
 end
+
 -- Events
 
 RegisterNetEvent('qb-tow:client:SpawnVehicle', function()
@@ -246,7 +266,6 @@ end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     PlayerJob = QBCore.Functions.GetPlayerData().job
-
     if PlayerJob.name == "tow" then
         CreateElements()
     end
@@ -254,7 +273,6 @@ end)
 
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
     PlayerJob = JobInfo
-
     if PlayerJob.name == "tow" then
         CreateElements()
     end
@@ -263,7 +281,11 @@ end)
 RegisterNetEvent('jobs:client:ToggleNpc', function()
     if QBCore.Functions.GetPlayerData().job.name == "tow" then
         if CurrentTow ~= nil then
-            QBCore.Functions.Notify(Lang:t("error.finish_work"), "error")
+            if Config.NotifyType == 'qb' then
+                QBCore.Functions.Notify(Lang:t("error.finish_work"), "info", 3500)
+            elseif Config.NotifyType == "okok" then
+                exports['okokNotify']:Alert("FINISH WORK", Lang:t("error.finish_work"), 3500, "info")
+            end 
             return
         end
         NpcOn = not NpcOn
@@ -275,7 +297,6 @@ RegisterNetEvent('jobs:client:ToggleNpc', function()
             CurrentLocation.model = Config.Locations["towspots"][randomLocation].model
             CurrentLocation.id = randomLocation
             CreateZone("towspots", randomLocation)
-
             CurrentBlip = AddBlipForCoord(CurrentLocation.x, CurrentLocation.y, CurrentLocation.z)
             SetBlipColour(CurrentBlip, 3)
             SetBlipRoute(CurrentBlip, true)
@@ -291,6 +312,135 @@ RegisterNetEvent('jobs:client:ToggleNpc', function()
     end
 end)
 
+RegisterNetEvent("qb-towjob:client:mzSkills", function()
+    if Config.mzskills then 
+        local BetterXP = math.random(Config.DriverXPlow, Config.DriverXPhigh)
+        local xpmultiple = math.random(1, 4)
+        if xpmultiple >= 3 then
+            chance = BetterXP
+        elseif xpmultiple < 3 then
+            chance = Config.DriverXPlow
+        end
+        exports["mz-skills"]:UpdateSkill("Driving", chance) 
+        Wait(1000)
+        if Config.BonusChance >= math.random(1, 100) then
+            exports["mz-skills"]:CheckSkill("Driving", 12800, function(hasskill)
+                if hasskill then
+                    lvl8 = true
+                end
+            end)
+            exports["mz-skills"]:CheckSkill("Driving", 6400, function(hasskill)
+                if hasskill then
+                    lvl7 = true
+                end
+            end)
+            exports["mz-skills"]:CheckSkill("Driving", 3200, function(hasskill)
+                if hasskill then
+                    lvl6 = true
+                end
+            end)
+            exports["mz-skills"]:CheckSkill("Driving", 1600, function(hasskill)
+                if hasskill then
+                    lvl5 = true
+                end
+            end)
+            exports["mz-skills"]:CheckSkill("Driving", 800, function(hasskill)
+                if hasskill then
+                    lvl4 = true
+                end
+            end)
+            exports["mz-skills"]:CheckSkill("Driving", 400, function(hasskill)
+                if hasskill then
+                    lvl3 = true
+                end
+            end)
+            exports["mz-skills"]:CheckSkill("Driving", 200, function(hasskill)
+                if hasskill then
+                    lvl2 = true
+                end
+            end)
+            exports["mz-skills"]:CheckSkill("Driving", 0, function(hasskill)
+                if hasskill then
+                    lvl1 = true
+                end
+            end)
+            if lvl8 == true then
+                TriggerServerEvent('qb-towjob:server:NPCBonusLevel8')
+                Wait(1500)
+                if Config.NotifyType == 'qb' then
+                    QBCore.Functions.Notify('Best tow truck driver ever, going to give you a 5 star review!', "info", 3500)
+                elseif Config.NotifyType == "okok" then
+                    exports['okokNotify']:Alert("TIP", 'Best tow truck driver ever, going to give you a 5 star review!', 3500, "info")
+                end 
+                lvl8 = false
+            elseif lvl7 == true then
+                TriggerServerEvent('qb-towjob:server:NPCBonusLevel7')
+                Wait(1500)
+                if Config.NotifyType == 'qb' then
+                    QBCore.Functions.Notify('Best tow truck driver ever, going to give you a 5 star review!', "info", 3500)
+                elseif Config.NotifyType == "okok" then
+                    exports['okokNotify']:Alert("TIP", 'Best tow truck driver ever, going to give you a 5 star review!', 3500, "info")
+                end 
+                lvl7 = false
+            elseif lvl6 == true then
+                TriggerServerEvent('qb-towjob:server:NPCBonusLevel6')
+                Wait(1500)
+                if Config.NotifyType == 'qb' then
+                    QBCore.Functions.Notify('Hey, do you always drive so well? You got me here quick smart!', "info", 3500)
+                elseif Config.NotifyType == "okok" then
+                    exports['okokNotify']:Alert("TIP", 'Hey, do you always drive so well? You got me here quick smart!', 3500, "info")
+                end 
+                lvl6 = false
+            elseif lvl5 == true then
+                TriggerServerEvent('qb-towjob:server:NPCBonusLevel5')
+                Wait(1500)
+                if Config.NotifyType == 'qb' then
+                    QBCore.Functions.Notify('Hey, do you always drive so well? You got me here quick smart!', "info", 3500)
+                elseif Config.NotifyType == "okok" then
+                    exports['okokNotify']:Alert("TIP", 'Hey, do you always drive so well? You got me here quick smart!', 3500, "info")
+                end 
+                lvl5 = false
+            elseif lvl4 == true then
+                TriggerServerEvent('qb-towjob:server:NPCBonusLevel4')
+                Wait(1500)
+                if Config.NotifyType == 'qb' then
+                    QBCore.Functions.Notify('Wow, this is in good condition, keep up the good work.', "info", 3500)
+                elseif Config.NotifyType == "okok" then
+                    exports['okokNotify']:Alert("TIP", 'Wow, this is in good condition, keep up the good work.', 3500, "info")
+                end 
+                lvl4 = false
+            elseif lvl3 == true then
+                TriggerServerEvent('qb-towjob:server:NPCBonusLevel3')
+                Wait(1500)
+                if Config.NotifyType == 'qb' then
+                    QBCore.Functions.Notify('Wow, this is in good condition, keep up the good work.', "info", 3500)
+                elseif Config.NotifyType == "okok" then
+                    exports['okokNotify']:Alert("TIP", 'Wow, this is in good condition, keep up the good work.', 3500, "info")
+                end 
+                lvl3 = false
+            elseif lvl2 == true then
+                TriggerServerEvent('qb-towjob:server:NPCBonusLevel2')
+                Wait(1500)
+                if Config.NotifyType == 'qb' then
+                    QBCore.Functions.Notify('Thank you for this, take a little change for your trouble.', "info", 3500)
+                elseif Config.NotifyType == "okok" then
+                    exports['okokNotify']:Alert("TIP", 'Thank you for this, take a little change for your trouble.', 3500, "info")
+                end 
+                lvl2 = false
+            elseif lvl1 == true then 
+                TriggerServerEvent('qb-towjob:server:NPCBonusLevel1')
+                Wait(1500)
+                if Config.NotifyType == 'qb' then
+                    QBCore.Functions.Notify('Thank you for this, take a little change for your trouble.', "info", 3500)
+                elseif Config.NotifyType == "okok" then
+                    exports['okokNotify']:Alert("TIP", 'Thank you for this, take a little change for your trouble.', 3500, "info")
+                end 
+                lvl1 = false
+            end
+        end
+    end
+end)
+
 RegisterNetEvent('qb-tow:client:TowVehicle', function()
     local vehicle = GetVehiclePedIsIn(PlayerPedId(), true)
     if isTowVehicle(vehicle) then
@@ -299,10 +449,13 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
             local coordA = GetEntityCoords(playerped, 1)
             local coordB = GetOffsetFromEntityInWorldCoords(playerped, 0.0, 5.0, 0.0)
             local targetVehicle = getVehicleInDirection(coordA, coordB)
-
             if NpcOn and CurrentLocation then
                 if GetEntityModel(targetVehicle) ~= joaat(CurrentLocation.model) then
-                    QBCore.Functions.Notify(Lang:t("error.vehicle_not_correct"), "error")
+                    if Config.NotifyType == 'qb' then
+                        QBCore.Functions.Notify(Lang:t("error.vehicle_not_correct"), "info", 3500)
+                    elseif Config.NotifyType == "okok" then
+                        exports['okokNotify']:Alert("WRONG VEHICLE", Lang:t("error.vehicle_not_correct"), 3500, "info")
+                    end 
                     return
                 end
             end
@@ -327,7 +480,11 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                             CurrentTow = targetVehicle
                             if NpcOn then
                                 RemoveBlip(CurrentBlip)
-                                QBCore.Functions.Notify(Lang:t("mission.goto_depot"), "primary", 5000)
+                                if Config.NotifyType == 'qb' then
+                                    QBCore.Functions.Notify(Lang:t("mission.goto_depot"), "info", 5000)
+                                elseif Config.NotifyType == "okok" then
+                                    exports['okokNotify']:Alert("GO TO THE DEPOT", Lang:t("mission.goto_depot"), 5000, "info")
+                                end 
                                 CurrentBlip2 = AddBlipForCoord(Config.Locations["dropoff"].coords.x, Config.Locations["dropoff"].coords.y, Config.Locations["dropoff"].coords.z)
                                 SetBlipColour(CurrentBlip2, 3)
                                 SetBlipRoute(CurrentBlip2, true)
@@ -335,14 +492,21 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                                 drawDropOff = true
                                 drawDropOffMarker()
                                 local vehNetID = NetworkGetNetworkIdFromEntity(targetVehicle)
-                                TriggerServerEvent('qb-tow:server:nano', vehNetID)
                                 --remove zone
                                 CurrentLocation.zoneCombo:destroy()
                             end
-                            QBCore.Functions.Notify(Lang:t("mission.vehicle_towed"), "success")
+                            if Config.NotifyType == 'qb' then
+                                QBCore.Functions.Notify(Lang:t("mission.vehicle_towed"), "success", 5000)
+                            elseif Config.NotifyType == "okok" then
+                                exports['okokNotify']:Alert("VEHICLE TOWED", Lang:t("mission.vehicle_towed"), 5000, "success")
+                            end 
                         end, function() -- Cancel
                             StopAnimTask(PlayerPedId(), "mini@repair", "fixing_a_ped", 1.0)
-                            QBCore.Functions.Notify(Lang:t("error.failed"), "error")
+                            if Config.NotifyType == 'qb' then
+                                QBCore.Functions.Notify(Lang:t("error.failed"), "error", 3500)
+                            elseif Config.NotifyType == "okok" then
+                                exports['okokNotify']:Alert("FAILIED", Lang:t("error.failed"), 3500, "error")
+                            end 
                         end)
                     end
                 end
@@ -372,14 +536,26 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                 RemoveBlip(CurrentBlip2)
                 CurrentTow = nil
                 drawDropOff = false
-                QBCore.Functions.Notify(Lang:t("mission.vehicle_takenoff"), "success")
+                if Config.NotifyType == 'qb' then
+                    QBCore.Functions.Notify(Lang:t("mission.vehicle_takenoff"), "success", 3500)
+                elseif Config.NotifyType == "okok" then
+                    exports['okokNotify']:Alert("UNMOUNTED", Lang:t("mission.vehicle_takenoff"), 3500, "success")
+                end 
             end, function() -- Cancel
                 StopAnimTask(PlayerPedId(), "mini@repair", "fixing_a_ped", 1.0)
-                QBCore.Functions.Notify(Lang:t("error.failed"), "error")
+                if Config.NotifyType == 'qb' then
+                    QBCore.Functions.Notify(Lang:t("error.failed"), "error", 3500)
+                elseif Config.NotifyType == "okok" then
+                    exports['okokNotify']:Alert("FAILED", Lang:t("error.failed"), 3500, "error")
+                end 
             end)
         end
     else
-        QBCore.Functions.Notify(Lang:t("error.not_towing_vehicle"), "error")
+        if Config.NotifyType == 'qb' then
+            QBCore.Functions.Notify(Lang:t("error.not_towing_vehicle"), "error", 3500)
+        elseif Config.NotifyType == "okok" then
+            exports['okokNotify']:Alert("NOT TOWING", Lang:t("error.not_towing_vehicle"), 3500, "error")
+        end 
     end
 end)
 
@@ -393,7 +569,11 @@ RegisterNetEvent('qb-tow:client:TakeOutVehicle', function(data)
         TriggerServerEvent('qb-tow:server:DoBail', true, vehicleInfo)
         selectedVeh = vehicleInfo
     else
-        QBCore.Functions.Notify(Lang:t("error.too_far_away"), 'error')
+        if Config.NotifyType == 'qb' then
+            QBCore.Functions.Notify(Lang:t("error.too_far_away"), "error", 3500)
+        elseif Config.NotifyType == "okok" then
+            exports['okokNotify']:Alert("TOO FAR", Lang:t("error.too_far_away"), 3500, "error")
+        end 
     end
 end)
 
@@ -407,7 +587,11 @@ RegisterNetEvent('qb-tow:client:Vehicle', function()
             MenuGarage()
         end
     else
-        QBCore.Functions.Notify(Lang:t("error.finish_work"), "error")
+        if Config.NotifyType == 'qb' then
+            QBCore.Functions.Notify(Lang:t("error.finish_work"), "error", 3500)
+        elseif Config.NotifyType == "okok" then
+            exports['okokNotify']:Alert("FINISH WORK", Lang:t("error.finish_work"), 3500, "error")
+        end 
     end
 end)
 
@@ -419,6 +603,11 @@ RegisterNetEvent('qb-tow:client:PaySlip', function()
         NpcOn = false
     else
         QBCore.Functions.Notify(Lang:t("error.no_work_done"), "error")
+        if Config.NotifyType == 'qb' then
+            QBCore.Functions.Notify(Lang:t("error.no_work_done"), "error", 3500)
+        elseif Config.NotifyType == "okok" then
+            exports['okokNotify']:Alert("NO WORK?", Lang:t("error.no_work_done"), 3500, "error")
+        end 
     end
 end)
 
@@ -439,6 +628,7 @@ RegisterNetEvent('qb-tow:client:ShowMarker', function(active)
 end)
 
 -- Threads
+
 CreateThread(function()
     while true do
         if showMarker then
