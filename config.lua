@@ -1,5 +1,50 @@
 Config = {}
 
+Config.NotifyType = 'okok'                -- Change to "qb" for standard notifications or "okok" for okokNotify notifications.
+
+Config.mzskills = true                    -- Change to "false" to disable the use of mz-skills
+-- if Config.mzskills = true, the following parameters apply: 
+Config.DriverXPlow = 3                    -- Lowest amount of "driving" XP obtained for completing a tow.
+Config.DriverXPhigh = 5                   -- Highest amount of "driving" XP obtained for completing a tow.
+Config.BonusChance = 50                   -- Percentage chance to receive bonus based on "Driving" XP
+
+--BONUS ITEM -- not connected with mz-skills (i.e. do not have to have mz-skills enabled to have bonus items)
+Config.bonus = true                       -- Set to "true" to enable bonuses, set to "false" to disable bonus items
+-- if Config.bonus = true, then the following parameters apply: 
+Config.bonusitem = "blankusb"             -- The bonus item that will drop.
+Config.bonuschance = 15                   -- The chance of a bonus item dropping 
+
+--PAYMENT--
+Config.Lowpay = 500                       -- Lowest cash value (depends on payment formula - not the actual amount received).
+Config.Highpay = 750                      -- Highest cash value (depends on payment formula - not the actual amount received).
+Config.Paymenttax = 15                    -- Tax payable on income generated.
+
+--BONUS OUTPUT--
+--Level 1
+Config.Level1Low = 1
+Config.Level1High = 5
+--Level 2
+Config.Level2Low = 3
+Config.Level2High = 8
+--Level 3
+Config.Level3Low = 5
+Config.Level3High = 12
+--Level 4
+Config.Level4Low = 8
+Config.Level4High = 16
+--Level 5
+Config.Level5Low = 10
+Config.Level5High = 18
+--Level 6
+Config.Level6Low = 13
+Config.Level6High = 22
+--Level 7
+Config.Level7Low = 15
+Config.Level7High = 26
+--Level 8
+Config.Level8Low = 18
+Config.Level8High = 30
+
 Config.UseTarget = GetConvar('UseTarget', 'false') == 'true'
 
 Config.BailPrice = 250
